@@ -1,7 +1,8 @@
-// 겨울학기 모객 회의 자료 PPT 생성 스크립트 (3장)
+// 겨울학기 모객 회의 자료 PPT 생성 스크립트 (6장)
 //  1. 12월 모객 아이템 현황 (업무 진행 상태·주차별 업무량 차트)
 //  2. CMS 프로젝트 허브 구축 현황 (아이템별 운영 기간 타임라인·입력 현황)
 //  3. 에듀토크 실행 방향 (담당 최세종)
+//  4~6. 에듀토크 상세: 준비 일정·크리티컬 패스 / 방송 운영안 / 모객 시퀀스·전환 설계
 // 실행: NODE_PATH=<pptxgenjs가 설치된 node_modules> node scripts/build_winter_deck.js <출력.pptx> <apply_theme.js 경로>
 const pptxgen = require("pptxgenjs");
 const { applyTheme } = require(process.argv[3]);
@@ -9,8 +10,8 @@ const OUT = process.argv[2] || "겨울학기_모객_회의자료.pptx";
 
 const THEME = {
   name: "CMS Winter",
-  headFontFace: "Malgun Gothic",
-  bodyFontFace: "Malgun Gothic",
+  headFontFace: "Pretendard",
+  bodyFontFace: "Pretendard",
   colors: {
     dk1: "1B2130", lt1: "FFFFFF", dk2: "1F2A44", lt2: "EEF1F5",
     accent1: "2A7A72", accent2: "A8640F", accent3: "8A3F5C",
@@ -340,8 +341,283 @@ footer("출처: CMS MKT | 2026 4Q · [4Q] Items통합 B~H열 에듀토크(10/6 �
 
 s.addNotes("[4Q] Items통합에서 담당자가 최세종인 아이템(에듀토크)만 정리. 협업 업무(주제 기획·패널: 홍혜숙/석다혜, 광고 소재·특전 제작: 최유나, 비주얼: 공혜영)는 일정 의존 관계로만 언급. 예산 금액은 시트에 없어 회의 전 기입 필요.");
 
+// ================= 4. 에듀토크 상세 ① 준비 일정 =================
+pres.addSection({ title: "에듀토크 상세" });
+const eduTitle = (sub) => {
+  s = pres.addSlide({ masterName: "ONE_PAGER", sectionTitle: "에듀토크 상세" });
+  s.addText([{ text: "에듀토크 상세" }, { text: "   " + sub, options: { fontSize: 13, bold: false } }], { placeholder: "title" });
+  T("담당 최세종 · 방송 11/4(수)", { x: 9.7, y: 0.28, w: 3.23, h: 0.5, align: "right", valign: "middle", color: C.accent5 });
+};
+eduTitle("① 준비 일정 — 24개 업무와 크리티컬 패스");
+
+// [워크스트림, 날짜(M/D 또는 null), 업무, 담당, 상태(done|doing|todo), 크리티컬]
+const EDU = [
+  ["기획·콘텐츠", "9/22", "송출 채널 선정 (이병훈TV)", "-", "done", 0],
+  ["기획·콘텐츠", "10/6", "주제 기획", "홍혜숙/석다혜", "doing", 1],
+  ["기획·콘텐츠", "10/6", "패널 확정", "홍혜숙/석다혜", "doing", 1],
+  ["기획·콘텐츠", "10/8", "특전 설정", "최세종", "todo", 1],
+  ["기획·콘텐츠", "10/16", "특전 개발 제작", "최유나", "doing", 1],
+  ["기획·콘텐츠", null, "특전 원고 작성 → 검수", "석다혜·이미현 → 홍혜숙", "todo", 0],
+  ["기획·콘텐츠", "10/30", "원고 · 발표자료 개발", "홍혜숙/석다혜", "todo", 1],
+  ["홍보·DM", "10/5", "홍보 채널 확정 (제휴실행안)", "최세종", "doing", 0],
+  ["홍보·DM", "10/8", "채널별 광고 소재 기획", "최유나", "todo", 1],
+  ["홍보·DM", null, "에듀토크 비주얼 기획", "공혜영", "todo", 0],
+  ["홍보·DM", "10/16", "광고 소재 디자인 · DM 문안", "최유나 · 최세종", "todo", 1],
+  ["홍보·DM", "10/19", "채널별 콘텐츠 게시", "최유나", "todo", 0],
+  ["홍보·DM", "10/21", "DM 1차(D-14) · 2차(D-7)", "최세종", "todo", 1],
+  ["랜딩·설문", "10/13", "랜딩 웹앱 구성 기획", "최세종/최유나", "todo", 0],
+  ["랜딩·설문", "10/16", "설문 설계", "최세종", "todo", 0],
+  ["랜딩·설문", "10/19", "랜딩 웹앱 개발", "최세종", "todo", 0],
+  ["랜딩·설문", "10/21", "랜딩 릴리즈", "최세종", "todo", 1],
+  ["방송 운영", "10/14", "라이브 채팅 대응방안 기획", "최세종", "todo", 0],
+  ["방송 운영", "10/30", "대본 리딩·리허설 (11/2 최종 점검)", "홍혜숙", "todo", 1],
+  ["방송 운영", "11/4", "방송 D-Day · 라이브 채팅 대응", "최세종", "todo", 1],
+];
+{
+  const GX = 0.4, GW = 8.35, LBL = 3.55, AX = GX + LBL + 0.1, AW = GW - LBL - 0.35;
+  const E0 = new Date(2026, 8, 20), E1 = new Date(2026, 10, 8);
+  const ex = (md) => { const [m, d] = md.split("/").map(Number); return AX + ((new Date(2026, m - 1, d) - E0) / (E1 - E0)) * AW; };
+  const top = 1.3, RH = 0.2, GH = 0.26;
+  const streams = ["기획·콘텐츠", "홍보·DM", "랜딩·설문", "방송 운영"];
+  const scol = { "기획·콘텐츠": C.accent2, "홍보·DM": C.accent1, "랜딩·설문": C.accent4, "방송 운영": C.accent3 };
+  let y = top;
+  const bodyH = streams.length * GH + EDU.length * RH;
+  [["10/1", "10/1"], ["10/15", "10/15"], ["11/1", "11/1"]].forEach(([md, l]) => {
+    T(l, { x: ex(md) - 0.3, y: top - 0.25, w: 0.6, h: 0.2, fontSize: 8, color: C.accent5, align: "center" });
+    s.addShape(pres.shapes.LINE, { x: ex(md), y: top, w: 0, h: bodyH, line: { color: "D4D8DE", width: 0.5, dashType: "dash" } });
+  });
+  s.addShape(pres.shapes.LINE, { x: ex("10/7"), y: top, w: 0, h: bodyH, line: { color: HEX.accent6, width: 1.25 } });
+  T("오늘", { x: ex("10/7") - 0.3, y: top - 0.25, w: 0.6, h: 0.2, fontSize: 8, bold: true, color: C.accent6, align: "center" });
+  T("미정", { x: AX + AW + 0.02, y: top - 0.25, w: 0.35, h: 0.2, fontSize: 8, color: C.accent5, align: "center" });
+  const crit = [];
+  streams.forEach((st) => {
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: GX, y: y + 0.03, w: GW, h: GH - 0.05, rectRadius: 0.04,
+      fill: { color: scol[st], transparency: 85 }, line: { type: "none" } });
+    T(st, { x: GX + 0.1, y, w: 2, h: GH, fontSize: 9, bold: true, color: scol[st], valign: "middle" });
+    y += GH;
+    EDU.filter((r) => r[0] === st).forEach(([, d, task, who, stt, cr]) => {
+      const mine = who.includes("최세종");
+      T([{ text: (d || "—") + "  ", options: { bold: true, color: C.text2 } }, { text: task, options: { bold: mine } },
+        { text: "  " + who, options: { fontSize: 7.5, color: mine ? HEX.accent3 : C.accent5, bold: mine } }],
+        { x: GX + 0.1, y, w: LBL, h: RH, fontSize: 8, valign: "middle" });
+      s.addShape(pres.shapes.LINE, { x: AX, y: y + RH / 2, w: AW + 0.3, h: 0, line: { color: "EEF0F3", width: 0.5 } });
+      const cx = d ? ex(d) : AX + AW + 0.2;
+      if (cr && d) crit.push([cx, y + RH / 2]);
+      s.addShape(pres.shapes.OVAL, { x: cx - 0.06, y: y + RH / 2 - 0.06, w: 0.12, h: 0.12,
+        fill: { color: stt === "done" ? HEX.accent1 : stt === "doing" ? HEX.accent2 : "FFFFFF" },
+        line: { color: cr ? HEX.accent6 : HEX.dk2, width: cr ? 1.5 : 0.75 } });
+      y += RH;
+    });
+  });
+  T([
+    { text: "● 완료  ", options: { color: C.accent1, bold: true } }, { text: "● 진행중  ", options: { color: C.accent2, bold: true } },
+    { text: "○ 예정  ", options: { color: C.text2, bold: true } }, { text: "◯ 빨간 테두리 = 크리티컬 패스  ", options: { color: C.accent6, bold: true } },
+    { text: "굵은 글씨 = 최세종 담당", options: { color: C.accent3, bold: true } },
+  ], { x: GX, y: top + bodyH + 0.08, w: GW, h: 0.22, fontSize: 8 });
+}
+
+// 크리티컬 패스·리스크 패널
+{
+  const PX = 8.95, PW = 3.98, PY = 0.98, PH = 5.4;
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: PX, y: PY, w: PW, h: PH, rectRadius: 0.06, fill: { color: C.text2 }, line: { type: "none" } });
+  T("크리티컬 패스", { x: PX + 0.2, y: PY + 0.08, w: PW - 0.4, h: 0.32, fontSize: 11, bold: true, color: C.background1, valign: "middle" });
+  const path = [["10/6", "주제·패널 확정"], ["10/8", "특전 설정 · 소재 기획"], ["10/16", "특전 제작 · 소재 디자인 · DM 문안"], ["10/21", "랜딩 릴리즈 · DM 1차"], ["10/30", "원고·발표자료 · 리허설"], ["11/4", "방송 D-Day"]];
+  path.forEach(([d, t], i) => {
+    const y = PY + 0.5 + i * 0.36;
+    s.addShape(pres.shapes.OVAL, { x: PX + 0.25, y: y + 0.06, w: 0.16, h: 0.16, fill: { color: i === path.length - 1 ? HEX.accent6 : "FFFFFF" }, line: { color: HEX.accent6, width: 1.25 } });
+    if (i < path.length - 1) s.addShape(pres.shapes.LINE, { x: PX + 0.33, y: y + 0.22, w: 0, h: 0.2, line: { color: HEX.accent6, width: 1 } });
+    T([{ text: d + "  ", options: { bold: true, color: "FFFFFF" } }, { text: t, options: { color: "DCE3EE" } }], { x: PX + 0.55, y, w: PW - 0.75, h: 0.28, fontSize: 9, valign: "middle" });
+  });
+  T("리스크와 대응", { x: PX + 0.2, y: PY + 2.75, w: PW - 0.4, h: 0.3, fontSize: 10, bold: true, color: C.background1 });
+  const risks = [
+    "주제·패널이 10/6보다 늦어지면 특전 → 소재 → DM이 연쇄 지연 → 오늘 회의에서 주제 확정",
+    "DM 1차(10/21)는 랜딩 릴리즈와 같은 날 → 10/19 개발 완료 후 신청 테스트 1회 필수",
+    "특전 원고·비주얼 기획은 날짜 미정 → 10/13까지로 지정 제안",
+    "10/12 주에 팀 전체 업무 39건 집중 → 디자인 요청 순서 사전 합의",
+  ];
+  T(risks.map((t, i) => ({ text: t, options: { bullet: { indent: 10 }, breakLine: i < risks.length - 1, paraSpaceAfter: 5 } })),
+    { x: PX + 0.2, y: PY + 3.08, w: PW - 0.4, h: 2.25, fontSize: 8.5, color: "DCE3EE", valign: "top" });
+}
+footer("출처: [4Q] Items통합 B~H열 에듀토크 24개 업무(10/6 기준) · ‘원고·발표자료’, ‘소재 디자인·DM 문안’, ‘DM 1·2차’ 등 같은 날짜 업무는 한 줄로 묶음 · 크리티컬 패스는 시트 비고의 선후관계 기준");
+
+// ================= 5. 에듀토크 상세 ② 방송 운영안 =================
+eduTitle("② 방송 운영안 (60분 기준, 안)");
+{
+  // 개요 표
+  head(0.4, 0.98, 4.1, C.text2, "방송 개요");
+  const ov = [
+    ["일시", "11/4(수) — 방송 시간 확정 필요"],
+    ["채널", "이병훈TV 라이브 (컨셉 대표님 보고 후 조율)"],
+    ["패널", "이병훈 소장 + CMS 발표자 (10/6 확정 예정)"],
+    ["주제", "10/6 확정 예정 (홍혜숙·석다혜) — 아래 후보 참고"],
+    ["특전", "주제 확정 후 설정(10/8) → 제작(10/16)"],
+    ["리허설", "10/30 대본 리딩·리허설 → 11/2 최종 점검"],
+  ];
+  s.addTable(ov.map(([k, v]) => [{ text: k, options: { bold: true, color: C.text2, fill: { color: "EEF1F5" } } }, { text: v }]),
+    { x: 0.4, y: 1.38, w: 4.1, colW: [0.75, 3.35], rowH: 0.3, fontSize: 8.5, fontFace: THEME.bodyFontFace, color: C.text1,
+      valign: "middle", margin: [0, 0.06, 0, 0.06], border: { type: "solid", pt: 0.5, color: "D4D8DE" } });
+
+  // 주제 후보
+  head(0.4, 3.35, 4.1, C.accent2, "주제 후보 (안)", "최종 선정은 주제 기획 담당");
+  const topics = [
+    ["A", "2027 특목·자사고 입시 변화와 겨울방학 수학 로드맵", "특사모·자사고 설명회와 연결"],
+    ["B", "초·중 수학, 겨울방학 3개월이 1년을 결정한다", "FIT·MATHMILE 체험수업과 연결"],
+    ["C", "이병훈 소장이 답하는 우리 아이 수학 진로 Q&A", "채팅 참여·설문 응답 극대화"],
+  ];
+  topics.forEach(([k, t, d], i) => {
+    const y = 3.8 + i * 0.75;
+    s.addShape(pres.shapes.OVAL, { x: 0.45, y: y + 0.08, w: 0.32, h: 0.32, fill: { color: C.accent2 }, line: { type: "none" } });
+    T(k, { x: 0.45, y: y + 0.08, w: 0.32, h: 0.32, fontSize: 10, bold: true, color: C.background1, align: "center", valign: "middle" });
+    T([{ text: t, options: { bold: true, breakLine: true } }, { text: d, options: { fontSize: 8, color: C.accent5 } }],
+      { x: 0.88, y, w: 3.6, h: 0.5, fontSize: 9, valign: "middle" });
+  });
+
+  // 큐시트 바
+  const QX = 4.75, QW = 8.18;
+  head(QX, 0.98, QW, C.text2, "큐시트 (안)", "분 단위 · ▼ 표시는 신청·설문 링크 노출(CTA) 시점");
+  const cue = [
+    ["오프닝", 5, C.accent5, "패널 소개 · 방송 안내"],
+    ["세션 1 · 입시 트렌드", 15, C.accent4, "이병훈 소장"],
+    ["세션 2 · 겨울방학 로드맵", 15, C.accent1, "CMS 발표자"],
+    ["특전 안내", 5, C.accent6, "특전 수령 = 설문 응답"],
+    ["실시간 Q&A", 15, C.accent2, "채팅 질문 큐레이션"],
+    ["클로징", 5, C.accent3, "인뎁스·체험 신청 안내"],
+  ];
+  const BY = 2.02, BH = 0.62, unit = QW / 60;
+  let cx = QX, t0 = 0;
+  cue.forEach(([n, m, col, d]) => {
+    s.addShape(pres.shapes.RECTANGLE, { x: cx, y: BY, w: m * unit, h: BH, fill: { color: col }, line: { color: "FFFFFF", width: 1.5 }, objectName: "cue-" + n });
+    T(m >= 15 ? n : n.replace(" · ", "\n"), { x: cx + 0.05, y: BY, w: m * unit - 0.1, h: BH, fontSize: m >= 15 ? 9 : 7.5, bold: true, color: C.background1, align: "center", valign: "middle" });
+    T(d, { x: cx, y: BY + BH + 0.05, w: m * unit, h: 0.36, fontSize: 7.5, color: C.accent5, align: "center", valign: "top" });
+    T(String(t0), { x: cx - 0.2, y: BY - 0.24, w: 0.4, h: 0.18, fontSize: 7.5, color: C.accent5, align: "center" });
+    cx += m * unit; t0 += m;
+  });
+  T("60", { x: cx - 0.2, y: BY - 0.24, w: 0.4, h: 0.18, fontSize: 7.5, color: C.accent5, align: "center" });
+  [[35, "CTA ① 특전·설문"], [45, "CTA ② 상담 신청"], [57, "CTA ③ 인뎁스·체험"]].forEach(([m, l]) => {
+    const x = QX + m * unit;
+    T("▼", { x: x - 0.15, y: BY - 0.47, w: 0.3, h: 0.2, fontSize: 10, color: C.accent6, align: "center" });
+    const lx = Math.min(x - 0.9, QX + QW - 1.8);
+    T(l, { x: lx, y: BY - 0.66, w: 1.8, h: 0.2, fontSize: 7.5, bold: true, color: C.accent6, align: lx < x - 0.9 ? "right" : "center" });
+  });
+
+  // 라이브 채팅 운영
+  head(QX, 3.25, 4.0, C.accent3, "라이브 채팅 운영", "최세종 · 10/14 대응방안 기획");
+  const roles = [
+    ["진행 보조", "공지 고정, 신청·설문 링크 3회 게시, 방송 흐름 안내"],
+    ["질문 큐레이터", "질문을 유형별로 분류 → Q&A용 상위 질문 전달"],
+    ["상담 연결", "개별 상담성 질문 → 상담 신청 링크로 유도, 연락처는 채팅에서 받지 않음"],
+  ];
+  roles.forEach(([r, d], i) => {
+    const y = 3.7 + i * 0.62;
+    T([{ text: r, options: { bold: true, color: C.accent3, breakLine: true } }, { text: d }], { x: QX + 0.1, y, w: 3.8, h: 0.52, fontSize: 8.5, valign: "top" });
+  });
+  T("사전 준비: 예상 질문 FAQ 20개 · 금지 표현(과장·비교 광고) 가이드 · 부정 이슈 발생 시 보고 라인", { x: QX + 0.1, y: 5.6, w: 3.8, h: 0.5, fontSize: 8, color: C.accent5, valign: "top" });
+
+  // D-Day 체크리스트
+  const KX = QX + 4.18, KW = QW - 4.18;
+  head(KX, 3.25, KW, C.accent1, "D-Day 체크리스트");
+  const ck = ["D-1 송출 테스트·링크 점검", "랜딩 신청 마감 시간·안내 문구", "특전 다운로드 링크·자동 메시지", "설문 응답 → 시트 저장 확인", "채팅 FAQ·링크 문구 사전 작성", "방송 종료 후 다시보기 공개 여부", "D+1 후속 알림톡 예약 발송"];
+  T(ck.map((t, i) => ({ text: "☐  " + t, options: { breakLine: i < ck.length - 1, paraSpaceAfter: 4 } })), { x: KX + 0.1, y: 3.7, w: KW - 0.2, h: 2.5, fontSize: 9, valign: "top" });
+}
+s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.4, y: 6.44, w: 12.53, h: 0.6,
+  fill: { color: C.accent6, transparency: 88 }, line: { color: C.accent6, width: 0.75 }, rectRadius: 0.06 });
+T("회의 결정 필요", { x: 0.55, y: 6.44, w: 1.3, h: 0.6, fontSize: 10.5, bold: true, color: C.accent6, valign: "middle" });
+T("① 주제 A·B·C 중 선택(또는 수정)   ② 방송 시간대   ③ 큐시트 시간 배분·CMS 발표자   ④ 채팅 운영 인원(역할 3개)   ⑤ 다시보기 공개 여부·기간",
+  { x: 1.85, y: 6.44, w: 10.95, h: 0.6, fontSize: 9, valign: "middle" });
+footer("시트 기준: 송출 채널·패널·주제 일정, 특전·리허설 일정, 라이브 채팅 대응 업무 · 큐시트·주제 후보·채팅 역할·체크리스트는 회의 논의용 제안(안)");
+
+// ================= 6. 에듀토크 상세 ③ 모객 시퀀스·전환 설계 =================
+eduTitle("③ 모객 시퀀스 · 신청 이후 전환 설계");
+{
+  head(0.4, 0.98, 12.53, C.text2, "메시지·홍보 시퀀스", "● 시트 확정   ○ 추가 제안");
+  const S0 = new Date(2026, 9, 17), S1 = new Date(2026, 10, 22);
+  const AX = 0.7, AW = 11.9;
+  const sx = (md) => { const [m, d] = md.split("/").map(Number); return AX + ((new Date(2026, m - 1, d) - S0) / (S1 - S0)) * AW; };
+  const LY = 2.5;
+  s.addShape(pres.shapes.LINE, { x: AX, y: LY, w: AW, h: 0, line: { color: HEX.dk2, width: 1.5 } });
+  const live = sx("11/4");
+  s.addShape(pres.shapes.RECTANGLE, { x: live - 0.04, y: LY - 0.22, w: 0.08, h: 0.44, fill: { color: HEX.accent6 }, line: { type: "none" } });
+  // [날짜, 제목, 설명, 시트확정, 위(1)/아래(0), 단(1|2)]
+  const seq = [
+    ["10/19", "콘텐츠 게시·광고", "채널별 순차 게시", 1, 1, 1],
+    ["10/21", "랜딩 오픈·DM 1차", "D-14 예열", 1, 0, 1],
+    ["10/28", "DM 2차", "D-7 리마인드", 1, 1, 1],
+    ["11/1", "D-3 알림톡", "특전 미리보기", 0, 0, 1],
+    ["11/3", "D-1 알림톡", "시청 링크·시간", 0, 1, 2],
+    ["11/4", "방송 당일", "2시간 전 링크", 0, 0, 2],
+    ["11/5", "D+1 다시보기", "설문 미응답자 재안내", 0, 1, 1],
+    ["11/6", "인뎁스 알림톡", "에듀토크 종료 후", 1, 0, 1],
+    ["11/20", "체험수업 신청 마감", "MATHMILE·FIT", 1, 1, 1],
+  ];
+  seq.forEach(([d, t, sub, fixed, up, tier]) => {
+    const stem = tier === 2 ? 0.8 : 0.36;
+    const x = sx(d);
+    s.addShape(pres.shapes.OVAL, { x: x - 0.08, y: LY - 0.08, w: 0.16, h: 0.16, fill: { color: fixed ? HEX.dk2 : "FFFFFF" }, line: { color: HEX.dk2, width: 1.25 } });
+    s.addShape(pres.shapes.LINE, { x, y: up ? LY - 0.1 - stem : LY + 0.1, w: 0, h: stem, line: { color: "9AA1AD", width: 0.5 } });
+    T([{ text: d + " " + t, options: { bold: true, breakLine: true } }, { text: sub, options: { color: C.accent5 } }],
+      { x: x + 1.45 > 12.93 ? x - 1.4 : x - 0.05, y: up ? LY - 0.52 - stem : LY + 0.12 + stem, w: 1.45, h: 0.4, fontSize: 8,
+        align: x + 1.45 > 12.93 ? "right" : "left", valign: up ? "bottom" : "top" });
+  });
+  T("12월 2주 입학테스트 →", { x: 11.2, y: LY + 0.48, w: 1.73, h: 0.4, fontSize: 8, bold: true, color: C.accent3, align: "right" });
+
+  // 설문 → 세그먼트 라우팅
+  const RY = 3.95;
+  head(0.4, RY, 7.0, C.accent1, "설문 → 세그먼트 → 후속 경로", "설문 설계 10/16 · 최세종");
+  T([{ text: "설문 문항 (안)", options: { bold: true, breakLine: true, color: C.accent1 } },
+    { text: "1. 자녀 학년", options: { breakLine: true } }, { text: "2. 목표 학교 유형", options: { breakLine: true } },
+    { text: "3. 현재 수학 학습 방식", options: { breakLine: true } }, { text: "4. 관심 프로그램", options: { breakLine: true } },
+    { text: "5. 상담 희망 여부", options: { breakLine: true } }, { text: "6. 궁금한 점 (주관식)" }],
+    { x: 0.5, y: RY + 0.45, w: 1.75, h: 2.1, fontSize: 8.5, valign: "top" });
+  T("→", { x: 2.2, y: RY + 1.1, w: 0.3, h: 0.4, fontSize: 16, color: C.accent5, align: "center" });
+  const segs = [
+    ["상담 희망", "방송 후 24~48h 내 상담콜 → 입테 예약", C.accent6],
+    ["특목·자사고 목표", "인뎁스 세미나 · 특사모 면접 컨설팅 안내", C.accent3],
+    ["MATHMILE 관심", "MATHMILE 체험수업 (신청 ~11/20)", C.accent2],
+    ["FIT 관심", "FIT 체험수업 (매쏠로지2 체험계정)", C.accent1],
+    ["기타·미응답", "D+1 다시보기 + 아샘·교과 알림톡", C.accent5],
+  ];
+  segs.forEach(([k, v, col], i) => {
+    const y = RY + 0.45 + i * 0.42;
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 2.55, y, w: 1.55, h: 0.34, rectRadius: 0.05, fill: { color: col }, line: { type: "none" } });
+    T(k, { x: 2.6, y, w: 1.45, h: 0.34, fontSize: 8.5, bold: true, color: C.background1, align: "center", valign: "middle" });
+    T("▶  " + v, { x: 4.2, y, w: 3.15, h: 0.34, fontSize: 8.5, valign: "middle" });
+  });
+
+  // KPI 퍼널 (목표 기입)
+  const FX = 7.6, FW = 5.33;
+  head(FX, RY, FW, C.accent3, "성과 지표", "목표는 회의에서 확정");
+  const kpi = [["노출·도달", "광고·채널 리포트"], ["랜딩 방문", "웹앱 방문 로그"], ["사전 신청", "신청 DB"], ["라이브 시청", "이병훈TV 통계"], ["설문 응답", "설문 시트"], ["후속 신청", "인뎁스·체험 신청"], ["입테 응시 · 등록", "입테 명단·등록"]];
+  kpi.forEach(([k, src], i) => {
+    const w = FW - 1.35 - i * 0.22, x = FX + (FW - 1.35 - w) / 2, y = RY + 0.45 + i * 0.3;
+    s.addShape(pres.shapes.RECTANGLE, { x, y, w, h: 0.26, fill: { color: C.accent3, transparency: 15 + i * 10 }, line: { type: "none" } });
+    T([{ text: k, options: { bold: true } }, { text: "  " + src, options: { fontSize: 7.5 } }], { x, y, w, h: 0.26, fontSize: 8.5, color: C.background1, align: "center", valign: "middle" });
+    T("목표 ______", { x: FX + FW - 1.3, y, w: 1.3, h: 0.26, fontSize: 8.5, color: C.text2, valign: "middle" });
+  });
+}
+s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.4, y: 6.55, w: 12.53, h: 0.48, fill: { color: C.background2 }, line: { type: "none" }, rectRadius: 0.06 });
+T([{ text: "핵심  ", options: { bold: true, color: C.text2 } },
+  { text: "에듀토크는 신청 DB를 모으는 것으로 끝나지 않음 → 설문 응답으로 관심사를 나눠 인뎁스·체험수업·특사모로 바로 넘기고, 상담 희망자는 48시간 안에 연락" }],
+  { x: 0.55, y: 6.55, w: 12.25, h: 0.48, fontSize: 9.5, valign: "middle" });
+footer("● 시트 확정: 콘텐츠 게시 10/19 · 랜딩·DM 1차 10/21 · DM 2차(D-7) · 인뎁스 알림톡(에듀토크 종료 후) · 체험수업 신청 관리 ~11/20 / ○ 제안: D-3·D-1·당일·D+1 알림톡, 설문 문항, 세그먼트 경로");
+
+// pptxgenjs는 테마 글꼴을 라틴(영문)에만 넣고 동아시아(ea) 글꼴은 비워 둔다.
+// 비어 있으면 한글이 PC 기본 글꼴로 대체되므로 테마의 ea 글꼴도 같은 글꼴로 채운다.
+async function setEastAsianFont(file, head, body) {
+  const fs = require("fs");
+  const JSZip = require(require.resolve("jszip", { paths: [require.resolve("pptxgenjs")] }));
+  const zip = await JSZip.loadAsync(fs.readFileSync(file));
+  const path = "ppt/theme/theme1.xml";
+  let xml = await zip.file(path).async("string");
+  const fill = (tag, face) => { xml = xml.replace(new RegExp("(<a:" + tag + ">[\\s\\S]*?)<a:ea typeface=\"[^\"]*\"", ""), "$1<a:ea typeface=\"" + face + "\""); };
+  fill("majorFont", head);
+  fill("minorFont", body);
+  zip.file(path, xml);
+  fs.writeFileSync(file, await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
+}
+
 (async () => {
   await pres.writeFile({ fileName: OUT });
   await applyTheme(OUT, THEME);
+  await setEastAsianFont(OUT, THEME.headFontFace, THEME.bodyFontFace);
   console.log("wrote", OUT);
 })();
