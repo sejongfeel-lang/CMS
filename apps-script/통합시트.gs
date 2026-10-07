@@ -12,8 +12,9 @@
 const OUTPUT_SHEET = '통합';
 // 통합 대상에서 뺄 시트명
 const EXCLUDE_SHEETS = [OUTPUT_SHEET];
-// 중복 판단 기준. 학교 표기가 제각각이라 중복이 덜 걸리면 ['이름', '연락처'] 로 줄이면 된다.
-const KEY_FIELDS = ['이름', '학교', '학년', '연락처'];
+// 중복 판단 기준: 이름 + 연락처가 같으면 같은 사람.
+// 학교·학년은 처음 나온 값을 쓰고, 비어 있으면 다른 시트의 값으로 채운다.
+const KEY_FIELDS = ['이름', '연락처'];
 // 헤더 행을 찾기 위해 위에서부터 살펴볼 행 수
 const HEADER_SCAN_ROWS = 5;
 
@@ -76,6 +77,10 @@ function buildMergedSheet() {
         if (!person) {
           person = { info: info, sheets: new Set() };
           people.set(key, person);
+        } else {
+          FIELDS.forEach(f => {
+            if (!person.info[f] && info[f]) person.info[f] = info[f];
+          });
         }
         person.sheets.add(name);
       }
